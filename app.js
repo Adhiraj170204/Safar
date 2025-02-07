@@ -1,7 +1,3 @@
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config()
-}
-
 let express = require('express')
 let path = require('path')
 let app = express()
@@ -16,7 +12,8 @@ let User = require('./model/user')
 let { wrapAsync } = require('./utility/middleware')
 const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet')
-const db_Url = 'mongodb://localhost:27017/journey'
+const db_Url = process.env.DB_Url || 'mongodb://localhost:27017/journey'
+const secret = process.env.Secret || 'tomato is a fruit'
 const MongoStore = require('connect-mongo')
 
 let Safar = require('./model/safar')
@@ -26,7 +23,7 @@ let reviewRoutes = require('./routes/review')
 let userRoutes = require('./routes/user')
 
 const mongoose = require('mongoose')
-mongoose.connect(db_Url, {                              //'mongodb://localhost:27017/journey'
+mongoose.connect(db_Url, {                              
 })
     .then(() => {
         console.log('Mongo Connection Successful')
@@ -59,14 +56,6 @@ const scriptSrcUrls = [
     "https://cdn.jsdelivr.net",
     "https://ka-f.fontawesome.com/"
 ];
-// const styleSrcUrls = [
-//     "https://kit-free.fontawesome.com/",
-//     "https://stackpath.bootstrapcdn.com/",
-//     "https://api.mapbox.com/",
-//     "https://api.tiles.mapbox.com/",
-//     "https://fonts.googleapis.com/",
-//     "https://use.fontawesome.com/",
-// ];
 
 const styleSrcUrls = [
     "https://kit-free.fontawesome.com/",
@@ -90,6 +79,7 @@ const connectSrcUrls = [
     "https://ka-f.fontawesome.com/"
 ];
 const fontSrcUrls = ["https://ka-f.fontawesome.com/"];
+
 app.use(
     helmet.contentSecurityPolicy({
         directives: {
@@ -103,7 +93,7 @@ app.use(
                 "'self'",
                 "blob:",
                 "data:",
-                "https://res.cloudinary.com/dvitogiav/", //SHOULD MATCH YOUR CLOUDINARY ACCOUNT! 
+                "https://res.cloudinary.com/dvitogiav/", 
                 "https://images.unsplash.com/",
             ],
             fontSrc: ["'self'", ...fontSrcUrls],
@@ -111,14 +101,11 @@ app.use(
     })
 );
 
-
-//app.use(morgan('dev'))
-
 const store = MongoStore.create({
     mongoUrl: db_Url,
     touchAfter: 24 * 60 * 60, // in seconds
     crypto: {
-        secret: 'thisshouldbeabettersecret!'
+        secret
     }
 });
 
@@ -129,7 +116,7 @@ store.on('error',()=>{
 app.use(session({
     store,
     name : 'random',
-    secret: 'apna kam kr',
+    secret,
     resave: false,
     saveUninitialized: true,
     cookie: {
