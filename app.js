@@ -162,6 +162,8 @@ app.use((err, req, res, next) => {
     res.status(status).render('error', { status, message });
 });
 
-app.listen(3000, () => {
-    console.log('Live on 3000')
+const port = process.env.Port || 3000
+
+app.listen(port, () => {
+    console.log(`Live on ${port}`)
 })
