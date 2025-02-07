@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New City</title>
+    <%- include('partials/cssJs') %>
+  </head>
+  <body>
+    <div id="content">
+      <%- include('partials/navbar') %>
+      <div
+        class="container d-flex justify-content-center align-items-center"
+      >
+        <div class="row">
+          <div
+            class="col-sm-8 offset-sm-2 col-md-8 offset-md-2 col-lg-10 offset-lg-1 col-xl-12 offset-xl-0"
+          >
+            <div id="full-height" class="container-fluid row my-5">
+              <h3 class="text-center">New City Form</h3>
+              <br /><br />
+              <div class="">
+                <form
+                  action="/city/new"
+                  class="needs-validation"
+                  method="post"
+                  novalidate
+                  enctype="multipart/form-data"
+                >
+                  <div class="mb-3 row">
+                    <label class="form-label">Title</label>
+                    <div class="">
+                      <input
+                        type="text"
+                        class="form-control"
+                        autofocus
+                        name="Title"
+                        required
+                      />
+                      <div class="valid-feedback">Looks Good !!</div>
+                    </div>
+                  </div>
+
+                  <div class="input-group mb-3 row">
+                    <label class="form-label">Cost</label>
+                    <div class="">
+                      <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        <input
+                          type="number"
+                          placeholder="0.00"
+                          name="Cost"
+                          class="form-control"
+                          required
+                        />
+                        <div class="valid-feedback">Looks Good !!</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea
+                      required
+                      class="form-control"
+                      rows="3"
+                      name="Description"
+                    ></textarea>
+                    <div class="valid-feedback">Looks Good !!</div>
+                  </div>
+
+                  <div class="mb-3 row">
+                    <b>Location :</b>
+                    <br /><br />
+                    <div class="col-6">
+                      <label class="form-label col-6">City</label>
+                      <input
+                        type="text"
+                        required
+                        class="form-control"
+                        name="City"
+                      />
+                      <div class="valid-feedback">Looks Good !!</div>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">State</label>
+                      <input
+                        type="text"
+                        required
+                        class="form-control"
+                        name="State"
+                      />
+                      <div class="valid-feedback">Looks Good !!</div>
+                    </div>
+                  </div>
+
+                  <div class="my-3">
+                    <label class="form-label" for="">Upload Images</label>
+                    <div class="input-group mb-3">
+                      <input
+                        type="file"
+                        class="form-control"
+                        id="image"
+                        name="image"
+                        multiple
+                      />
+                      <label class="input-group-text" for="image">Upload</label>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                  <a id="form" class="btn btn-danger" href="/"
+                    ><i class="far fa-window-close"></i
+                  ></a>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <%- include('partials/footer') %>
+    </div>
+  </body>
+</html>
+
+<script src="/scriptvalidation.js"></script>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register</title>
+    <%- include('../partials/cssJs') %>
+  </head>
+  <body>
+    <div id="content">
+      <%- include('../partials/navbar') %> <%- include('../partials/flash') %>
+      <div
+        class="container d-flex justify-content-center align-items-center mt-5"
+      >
+        <div class="row">
+          <div
+            class="col-sm-8 offset-sm-2 col-md-8 offset-md-2 col-lg-10 offset-lg-1 col-xl-12 offset-xl-0"
+          >
+            <div id="full-height" class="container-fluid row my-5">
+              <h3 class="text-center">Register</h3>
+              <br /><br />
+              <div class="">
+                <form
+                  action="/register"
+                  class="needs-validation"
+                  method="post"
+                  novalidate
+                >
+                  <div class="mb-3 row">
+                    <label class="form-label">Username</label>
+                    <div class="">
+                      <input
+                        type="text"
+                        class="form-control"
+                        autofocus
+                        name="username"
+                        required
+                      />
+                      <div class="valid-feedback">Looks Good !!</div>
+                    </div>
+                  </div>
+                  <div class="mb-3 row">
+                    <label class="form-label">Email</label>
+                    <div class="">
+                      <input
+                        type="email"
+                        class="form-control"
+                        name="email"
+                        required
+                      />
+                      <div class="valid-feedback">Looks Good !!</div>
+                    </div>
+                  </div>
+                  <div class="mb-3 row">
+                    <label class="form-label">Password</label>
+                    <div class="">
+                      <input
+                        type="password"
+                        class="form-control"
+                        name="password"
+                        required
+                      />
+                      <div class="valid-feedback">Looks Good !!</div>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-success">Submit</button>
+                  <a id="form" class="btn btn-danger" href="/"
+                    ><i class="far fa-window-close"></i
+                  ></a>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <%- include('../partials/footer') %>
+    </div>
+  </body>
+</html>
+
+<script src="/scriptValidation.js"></script>

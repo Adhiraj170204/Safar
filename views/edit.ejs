@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit</title>
+    <%- include('partials/cssJs') %>
+  </head>
+  <body>
+    <div id="content">
+      <%- include('partials/navbar') %> <%- include('partials/flash') %>
+      <div class="container mb-5 mt-5">
+        <!-- Added mt-5 class for top margin -->
+        <h2>Editing Page</h2>
+        <br />
+        <form
+          action="/city/<%=found._id%>?_method=PUT"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <div class="mb-3 row">
+            <label class="form-label">Title</label>
+            <div class="col-4">
+              <input
+                type="text"
+                class="form-control"
+                name="city[Title]"
+                value="<%= found.Title %>"
+              />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-4">
+              <div class="input-group mb-3">
+                <label class="form-label">Cost</label>
+                <div class="input-group">
+                  <span class="input-group-text">₹</span>
+                  <input
+                    id="Cost"
+                    type="text"
+                    value="<%= found.Cost %>"
+                    name="city[Cost]"
+                    class="form-control"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="3" name="city[Description]">
+<%= found.Description %></textarea
+            >
+          </div>
+          <div class="mb-3 row">
+            <div class="col-4">
+              <label class="form-label col-6">Location</label>
+              <input
+                type="text"
+                class="form-control"
+                value="<%= found.Location %>"
+                name="city[Location]"
+              />
+            </div>
+          </div>
+          <div class="row">
+            <div class="my-3 col-6">
+              <label class="form-label" for="">Add Images</label>
+              <div class="input-group mb-3">
+                <input
+                  type="file"
+                  class="form-control"
+                  id="image"
+                  name="image"
+                  multiple
+                />
+                <label class="input-group-text" for="image">Upload</label>
+              </div>
+            </div>
+          </div>
+
+          <% found.Images.forEach((img,i) => {%>
+          <div class="d-inline mx-1">
+            <img src="<%=img.thumbnail%>" class="img-thumbnail" alt="" />
+            <input
+              type="checkbox"
+              id="image-<%=i%>"
+              name="deleteImages[]"
+              value="<%=img.filename%>"
+            />
+            <label for="image-<%=i%>">Delete  </label>
+          </div>
+          <% }) %>
+           <br><br>
+          <button type="submit" class="btn btn-primary">
+            <i class="far fa-edit"></i>
+          </button>
+        </form>
+        <br />
+        <a class="btn btn-danger" href="/city/<%= found._id %>" role="button"
+          ><i class="far fa-window-close"></i
+        ></a>
+      </div>
+      <%- include('partials/footer') %>
+    </div>
+  </body>
+</html>

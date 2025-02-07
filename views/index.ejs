@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index</title>
+    <%- include('partials/cssJs') %>
+    <link crossorigin="anonymous"
+      href="https://api.mapbox.com/mapbox-gl-js/v3.9.4/mapbox-gl.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="content">
+      <%- include('partials/navbar') %> <%- include('partials/flash') %>
+      <div id="map"></div>
+      <div class="container">
+        <h2 class="mt-5">List of all cities(<%=c.length%>)</h2>
+        <div class="d-flex flex-wrap justify-content-center">
+          <% for (const i of c) { %>
+          <div class="px-0 m-2 card" style="width: 16rem">
+            <img crossorigin="anonymous"
+              src="<%=i.Images[0].url%>"
+              class="img-fluid card-img-top"
+              alt=""
+            />
+            <div class="card-body">
+              <h5 class="card-title"><%= i.Title %></h5>
+              <h6 class="card-subtitle mb-2"><%=i.Location%></h6>
+              <p class="card-text"><%= i.Description %></p>
+              <a href="/city/<%=i._id%>" class="btn btn-primary">View More</a>
+            </div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+      <%- include('partials/footer') %>
+    </div>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.9.4/mapbox-gl.js"></script>
+    <script>
+      mapboxgl.accessToken = "<%=process.env.Mapbox_Token%>";
+      let cities = {features: <%-JSON.stringify(c)%>}
+    </script>
+    <script crossorigin="anonymous" src="/mapCluster.js"></script>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Details</title>
+    <%- include('partials/cssJs') %>
+    <link crossorigin="anonymous" rel="stylesheet" href="/starabilty.css" />
+    <link
+      crossorigin="anonymous"
+      href="https://api.mapbox.com/mapbox-gl-js/v3.9.4/mapbox-gl.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="content">
+      <%- include('partials/navbar') %> <%- include('partials/flash') %>
+
+      <div class="row">
+        <div
+          id=""
+          class="px-0 col-xxl-4 offset-xxl-2 col-lg-4 offset-lg-1 col-sm-8 offset-sm-2 col-10 offset-1"
+          style="min-height: 70vh"
+        >
+          <div
+            id="fit-content"
+            class="card card-responsive"
+          >
+            <div id="carouselExampleFade" class="carousel slide carousel-fade">
+              <div class="carousel-inner">
+                <% found.Images.forEach((img,i) => { %>
+                <div class="carousel-item <%= i === 0 ? 'active' : '' %>">
+                  <img
+                    crossorigin="anonymous"
+                    src="<%=img.cardImage%>"
+                    class="d-block w-100"
+                    alt=""
+                  />
+                </div>
+                <% }) %>
+              </div>
+              <button
+                class="carousel-control-prev"
+                type="button"
+                data-bs-target="#carouselExampleFade"
+                data-bs-slide="prev"
+              >
+                <span
+                  class="carousel-control-prev-icon"
+                  aria-hidden="true"
+                ></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button
+                class="carousel-control-next"
+                type="button"
+                data-bs-target="#carouselExampleFade"
+                data-bs-slide="next"
+              >
+                <span
+                  class="carousel-control-next-icon"
+                  aria-hidden="true"
+                ></span>
+                <span class="visually-hidden">Next</span>
+              </button>
+            </div>
+
+            <div class="card-body pb-0">
+              <h5 class="card-title"><%= found.Title %></h5>
+              <p class="card-text"><%= found.Description %></p>
+              <p class="blockquote-footer"><%=found.Author.username%></p>
+            </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><b>Cost</b>: <%= found.Cost %></li>
+              <li class="list-group-item">
+                <b>Location</b>: <%= found.Location %>
+              </li>
+            </ul>
+            <% if(currentUser && found.Author.equals(currentUser._id)) { %>
+            <div id="card-body" class="card-body">
+              <form id="form" action="<%=found._id%>/edit" method="get">
+                <button class="btn btn-warning mx-2">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </form>
+              <form
+                id="form"
+                action="/city/<%=found._id%>?_method=DELETE"
+                method="post"
+              >
+                <button class="btn btn-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </div>
+            <% } %>
+          </div>
+        </div>
+        <div class="mt-3 col-xxl-5 offset-xxl-0 col-lg-4 offset-lg-2 col-10 offset-1">
+          <div class="m-auto" id="map" style="width: 100%; height: 300px"></div>
+          <% if(currentUser) {%>
+          <div class="">
+            <form
+              action="<%=found._id%>/review"
+              method="post"
+              class="mb-3 needs-validation row"
+              novalidate
+            >
+              <div class="my-3 col-xxl-3 col-xl-4">
+                <fieldset class="starability-basic d-inline">
+                  <legend>First rating:</legend>
+                  <input
+                    type="radio"
+                    id="no-rate"
+                    class="input-no-rate"
+                    name="rating"
+                    value="0"
+                    checked
+                    aria-label="No rating."
+                  />
+                  <input
+                    type="radio"
+                    id="first-rate1"
+                    name="rating"
+                    value="1"
+                  />
+                  <label for="first-rate1" title="Terrible">1 star</label>
+                  <input
+                    type="radio"
+                    id="first-rate2"
+                    name="rating"
+                    value="2"
+                  />
+                  <label for="first-rate2" title="Not good">2 stars</label>
+                  <input
+                    type="radio"
+                    id="first-rate3"
+                    name="rating"
+                    value="3"
+                  />
+                  <label for="first-rate3" title="Average">3 stars</label>
+                  <input
+                    type="radio"
+                    id="first-rate4"
+                    name="rating"
+                    value="4"
+                  />
+                  <label for="first-rate4" title="Very good">4 stars</label>
+                  <input
+                    type="radio"
+                    id="first-rate5"
+                    name="rating"
+                    value="5"
+                  />
+                  <label for="first-rate5" title="Amazing">5 stars</label>
+                </fieldset>
+              </div>
+              <div class="my-3 col-xxl-6 col-3-xl-3">
+                <legend class="">Review:</legend>
+                <textarea
+                  required
+                  class="form-control mb-3"
+                  name="review"
+                  id="body"
+                  cols="30"
+                  rows="3"
+                ></textarea>
+                <div class="invalid-feedback mb-3">
+                  U must type the review to submit
+                </div>
+              </div>
+              <div class="my-3 pb-3 col-xxl-2 d-flex justify-content-start align-items-end">
+                <button class="btn btn-info">
+                  <i class="fas fa-comment"></i>
+                </button>
+              </div>
+            </form>
+          </div>
+          <% } %>
+          <div class="mb-3 mt-2">
+            <% for (const i of found.Review){%>
+            <div class="card mb-3 d-flex flex-row justify-content-between">
+              <div class="card-body p-0 px-2">
+                <p class="blockquote m-0 mt-1"><%=i.author.username%></p>
+                <p class="starability-result" data-rating="<%=i.rating%>">
+                  Rated: <%=i.rating%> stars
+                </p>
+                <b>Review</b>: <%= i.review %>
+              </div>
+              <% if(currentUser && i.author.equals(currentUser._id)) { %>
+              <div class="m-2 d-flex flex-column justify-content-center">
+                <form
+                  method="post"
+                  action="/city/<%=found._id%>/review/<%=i._id%>?_method=DELETE"
+                >
+                  <button class="btn btn-danger">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+              <% } %>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <%- include('partials/footer') %>
+    </div>
+    <script src="/scriptValidation.js"></script>
+    <script
+      crossorigin="anonymous"
+      src="https://api.mapbox.com/mapbox-gl-js/v3.9.4/mapbox-gl.js"
+    ></script>
+    <script>
+      mapboxgl.accessToken = "<%=process.env.Mapbox_Token%>";
+      let c = <%-JSON.stringify(found.geometry.coordinates)%>
+    </script>
+    <script crossorigin="anonymous" src="/mapScript.js"></script>
+  </body>
+</html>
