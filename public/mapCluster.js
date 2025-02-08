@@ -87,7 +87,7 @@
             );
         });
 
-        map.on('mouseover', 'unclustered-point', (e) => {
+        map.on('click', 'unclustered-point', (e) => {
             const coordinates = e.features[0].geometry.coordinates.slice();
             if (['mercator', 'equirectangular'].includes(map.getProjection().name)) {
                 while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
