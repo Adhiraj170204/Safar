@@ -51,7 +51,7 @@ router.post('/new', isLoggedIn, upload.array('image'), validate, wrapAsync(async
     }).send()
     n.geometry = geoData.body.features[0].geometry
     n.Author = req.user._id
-    if (!!req.files) {
+    if (req.files && req.files.length === 0) {
         n.Images = {
             url: `https://res.cloudinary.com/${process.env.Cloud_Name}/image/upload/v1738273884/samples/balloons.jpg`,
             filename: 'cld-sample-5'
