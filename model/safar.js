@@ -52,7 +52,7 @@ let safarSchema = new mongoose.Schema({
 }, { toJSON: {virtuals: true} })
 
 safarSchema.virtual('properties.popup').get(function () {
-    return `<strong><a href=/city/${this._id}>${this.Title}</a></strong>`
+    return `<strong><a href=/city/${this._id}>${this.Title}</a></strong><p>${this.Location}</p>`
 })
 
 let Safar = mongoose.model('Safar', safarSchema)

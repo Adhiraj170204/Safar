@@ -9,7 +9,6 @@ let path = require('path')
 let app = express()
 let methodOverride = require('method-override')
 let appError = require('./utility/appError')
-let morgan = require('morgan')
 let session = require('express-session')
 let flash = require('express-flash')
 let passport = require('passport')
@@ -28,8 +27,8 @@ let cityRoutes = require('./routes/city')
 let reviewRoutes = require('./routes/review')
 let userRoutes = require('./routes/user')
 
-const mongoose = require('mongoose')
-mongoose.connect(db_Url, {                              
+const mongoose = require('mongoose');
+mongoose.connect(db_Url, {
 })
     .then(() => {
         console.log('Mongo Connection Successful')
@@ -49,7 +48,9 @@ app.use(express.static(path.join(__dirname, 'partials')))
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.urlencoded({ extended: true }))
 app.use(methodOverride('_method'))
-app.use(mongoSanitize());
+app.use(mongoSanitize({
+    replaceWith: 'Invalid'
+}));
 app.use(helmet());
 
 
@@ -99,7 +100,7 @@ app.use(
                 "'self'",
                 "blob:",
                 "data:",
-                "https://res.cloudinary.com/dvitogiav/", 
+                "https://res.cloudinary.com/dvitogiav/",
                 "https://images.unsplash.com/",
             ],
             fontSrc: ["'self'", ...fontSrcUrls],
@@ -115,13 +116,13 @@ const store = MongoStore.create({
     }
 });
 
-store.on('error',()=>{
- console.log('session store error',e)   
+store.on('error', () => {
+    console.log('session store error', e)
 })
 
 app.use(session({
     store,
-    name : 'random',
+    name: 'random',
     secret,
     resave: false,
     saveUninitialized: true,

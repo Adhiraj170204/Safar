@@ -9,9 +9,7 @@
   <body>
     <div id="content">
       <%- include('partials/navbar') %>
-      <div
-        class="container d-flex justify-content-center align-items-center"
-      >
+      <div class="container d-flex justify-content-center align-items-center">
         <div class="row">
           <div
             class="col-sm-8 offset-sm-2 col-md-8 offset-md-2 col-lg-10 offset-lg-1 col-xl-12 offset-xl-0"
@@ -34,7 +32,7 @@
                         type="text"
                         class="form-control"
                         autofocus
-                        name="Title"
+                        name="city[Title]"
                         required
                       />
                       <div class="valid-feedback">Looks Good !!</div>
@@ -49,7 +47,7 @@
                         <input
                           type="number"
                           placeholder="0.00"
-                          name="Cost"
+                          name="city[Cost]"
                           class="form-control"
                           required
                         />
@@ -64,31 +62,21 @@
                       required
                       class="form-control"
                       rows="3"
-                      name="Description"
+                      name="city[Description]"
                     ></textarea>
                     <div class="valid-feedback">Looks Good !!</div>
                   </div>
 
                   <div class="mb-3 row">
-                    <b>Location :</b>
-                    <br /><br />
-                    <div class="col-6">
-                      <label class="form-label col-6">City</label>
+                    <label class="form-label">Location</label>
+                    <div class="">
                       <input
                         type="text"
-                        required
                         class="form-control"
-                        name="City"
-                      />
-                      <div class="valid-feedback">Looks Good !!</div>
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label">State</label>
-                      <input
-                        type="text"
+                        autofocus
+                        name="city[Location]"
+                        placeholder="City, State"
                         required
-                        class="form-control"
-                        name="State"
                       />
                       <div class="valid-feedback">Looks Good !!</div>
                     </div>

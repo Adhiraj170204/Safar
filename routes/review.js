@@ -5,11 +5,9 @@ let Safar = require('../model/safar')
 let Review = require('../model/review')
 const { reviewSchema } = require('../schema.js')
 
-let jschema = reviewSchema  
-
 router.post('/', isLoggedIn, wrapAsync(async (req, res, next) => {
     let { id } = req.params
-    let { error } = jschema.validate(req.body)
+    let { error } = reviewSchema.validate(req.body)
     if (error) {
         let msg = error.details.map(el => el.message).join(',')
         req.flash('error', msg)

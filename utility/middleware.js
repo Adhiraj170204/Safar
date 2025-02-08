@@ -2,6 +2,7 @@ let Safar = require('../model/safar')
 let Joi = require('joi')
 let appError = require('./appError')
 const Review = require('../model/review')
+let {citiesSchema} = require('../schema')
 
 module.exports.wrapAsync = (fn) => {
     return function (req, res, next) {
@@ -46,17 +47,11 @@ module.exports.isReviewAuthor = async (req, res, next) => {
 }
 
 module.exports.validate = (req, res, next) => {
-    let jschema = Joi.object({
-        Title: Joi.string().required(),
-        Cost: Joi.number().min(0).required(),
-        City: Joi.string().required(),
-        State: Joi.string().required(),
-        Description: Joi.string().required(),
-    })
-    let { error } = jschema.validate(req.body)
+    let { error } = citiesSchema.validate(req.body)
     if (error) {
         let msg = error.details.map(el => el.message).join(',')
-        throw new appError(400, msg)
+        req.flash('error', `${msg}`)
+        return res.redirect('/index')
     }
     else {
         next()

@@ -9,9 +9,6 @@ let { storage, cloudinary } = require('../cloudinary')
 const upload = multer({ storage })
 const mbxStyles = require('@mapbox/mapbox-sdk/services/geocoding');
 const geoCoder = mbxStyles({ accessToken: process.env.Mapbox_Token });
-const {citiesSchema} = require('../schema.js')
-
-let jschema = citiesSchema
 
 router.get('/new', isLoggedIn, (req, res) => {
     res.render('new')
@@ -31,36 +28,23 @@ router.get('/:id', wrapAsync(async (req, res, next) => {
 }))
 
 router.post('/new', isLoggedIn, upload.array('image'), validate, wrapAsync(async (req, res, next) => {
-    let { error } = jschema.validate(req.body.city)
-    if (error) {
-        let msg = error.details.map(el => el.message).join(',')
-        req.flash('error', `${msg}`)
-        return res.redirect('/index')
-    }
-    let { Title, City, State, Cost, Description } = req.body
-    let Location = `${City}, ${State}`
-    let n = new Safar({
-        Title,
-        Location,
-        Cost,
-        Description,
-    })
+    console.log(req.body)
+    let n = new Safar(req.body.city)
     let geoData = await geoCoder.forwardGeocode({
-        query: Location,
+        query: req.body.city.Location,
         limit: 1
     }).send()
     n.geometry = geoData.body.features[0].geometry
     n.Author = req.user._id
     if (req.files && req.files.length === 0) {
-        n.Images = {
+        n.Images.push({
             url: `https://res.cloudinary.com/${process.env.Cloud_Name}/image/upload/v1738273884/samples/balloons.jpg`,
             filename: 'cld-sample-5'
-        }
+        })
     }
     else {
         n.Images = req.files.map(f => ({ url: f.path, filename: f.filename }))
     }
-
     await n.save()
     req.flash('success', 'Successfully created')
     res.redirect(`/city/${n._id}`)
@@ -86,15 +70,9 @@ router.get('/:id/edit', isLoggedIn, isAuthor, wrapAsync(async (req, res, next) =
     res.render('edit', { found })
 }))
 
-router.put('/:id', isLoggedIn, isAuthor, upload.array('image'), wrapAsync(async (req, res, next) => {
+router.put('/:id', isLoggedIn, isAuthor, upload.array('image'), validate, wrapAsync(async (req, res, next) => {
     let { id } = req.params
-    let { error } = jschema.validate(req.body.city)
-    if (error) {
-        let msg = error.details.map(el => el.message).join(',')
-        req.flash('error', `${msg}`)
-        return res.redirect(`/city/${id}/edit`)
-    }
-    let n = await Safar.findByIdAndUpdate(id, req.body, { runValidators: true })
+    let n = await Safar.findByIdAndUpdate(id, req.body.city, { runValidators: true })
     let img = req.files.map(f => ({ url: f.path, filename: f.filename }))
     n.Images.push(...img)
     if (req.body.deleteImages) {
@@ -102,6 +80,12 @@ router.put('/:id', isLoggedIn, isAuthor, upload.array('image'), wrapAsync(async 
         for (const filename of req.body.deleteImages) {
             await cloudinary.uploader.destroy(filename)
         }
+    }
+    if (req.body.deleteImages && n.Images.length === req.body.deleteImages.length) {
+        n.Images.push({
+            url: `https://res.cloudinary.com/${process.env.Cloud_Name}/image/upload/v1738273884/samples/balloons.jpg`,
+            filename: 'cld-sample-5'
+        })
     }
     await n.save()
     req.flash('success', 'Successfully updated')
