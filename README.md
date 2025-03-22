@@ -4,6 +4,10 @@ Safar is a web application that helps users discover, share, and review travel d
 
 ![Safar Screenshot](https://res.cloudinary.com/dvitogiav/image/upload/v1738273884/samples/balloons.jpg)
 
+## Live Demo
+
+**[Visit Safar Website](https://safar-9zzk.onrender.com)** ← Click here to explore the live application
+
 ## Features
 
 - **Destination Discovery**: Browse through various cities with location mapping
@@ -26,17 +30,20 @@ Safar is a web application that helps users discover, share, and review travel d
 ## Installation
 
 1. Clone the repository:
+
    ```
    git clone https://github.com/yourusername/Safar.git
    cd Safar
    ```
 
 2. Install dependencies:
+
    ```
    npm install
    ```
 
 3. Create a `.env` file in the root directory with the following variables:
+
    ```
    NODE_ENV=development
    DB_Url=mongodb://localhost:27017/journey
@@ -49,6 +56,7 @@ Safar is a web application that helps users discover, share, and review travel d
    ```
 
 4. Start the development server:
+
    ```
    npm start
    ```
@@ -58,11 +66,13 @@ Safar is a web application that helps users discover, share, and review travel d
 ## Usage
 
 ### Browsing Destinations
+
 - Navigate to the Cities page to view all destinations
 - Click on any city card to see detailed information
 - Explore the interactive map to find destinations by location
 
 ### Adding a New Destination
+
 1. Log in to your account
 2. Click "Add City" in the navigation
 3. Fill out the form with details about the destination
@@ -70,6 +80,7 @@ Safar is a web application that helps users discover, share, and review travel d
 5. Submit to add your destination to the database
 
 ### Leaving Reviews
+
 1. Navigate to a destination page
 2. Scroll down to the reviews section
 3. Leave a star rating and written review
@@ -96,4 +107,4 @@ This project is licensed under the ISC License - see the LICENSE file for detail
 - [Bootstrap](https://getbootstrap.com/)
 - [Mapbox](https://www.mapbox.com/)
 - [Cloudinary](https://cloudinary.com/)
-- [Passport.js](http://www.passportjs.org/) 
+- [Passport.js](http://www.passportjs.org/)
