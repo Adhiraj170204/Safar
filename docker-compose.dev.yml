@@ -1,0 +1,46 @@
+services:
+  mongodb:
+    image: mongo:7-jammy
+    restart: unless-stopped
+    volumes:
+      - mongo_data_dev:/data/db
+    ports:
+      - "27017:27017"   # exposed so you can connect with MongoDB Compass
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+      - /app/node_modules   # prevents host node_modules from overwriting the container's
+    env_file: ./backend/.env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/Safar
+      - PORT=3000
+      - NODE_ENV=development
+    ports:
+      - "0.0.0.0:3000:3000"
+    depends_on:
+      - mongodb
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules   # prevents host node_modules from overwriting the container's
+    env_file: ./frontend/.env
+    environment:
+      - BACKEND_URL=http://backend:3000   # used by vite.config.ts proxy (server-side)
+      - VITE_API_BASE_URL=/api            # overrides the .env value; browser uses relative /api
+    ports:
+      - "0.0.0.0:5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data_dev:

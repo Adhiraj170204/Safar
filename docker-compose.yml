@@ -1,0 +1,46 @@
+services:
+  mongodb:
+    image: mongo:7-jammy
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    expose:
+      - "27017"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/Safar
+      - PORT=3000
+      - NODE_ENV=production
+    expose:
+      - "3000"
+    depends_on:
+      - mongodb
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_MAPBOX_TOKEN=${VITE_MAPBOX_TOKEN}
+        - VITE_API_BASE_URL=/api
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  mongo_data:
