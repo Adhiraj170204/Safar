@@ -102,7 +102,7 @@ jobs:
           script: |
             set -e
             cd "$HOME/safar"
-            git pull origin Safar-react
+            git pull --rebase origin Safar-react
             sudo docker compose up --build -d
 
       - name: Verify deployment
