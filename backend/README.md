@@ -90,9 +90,8 @@ backend/
 │   │   └── cloudinaryUpload.js     # Cloudinary streaming upload
 │   │
 │   ├── seeds/
-│   │   ├── seedAdmin.js            # Quick admin seeder
 │   │   ├── createAdmin.js          # Interactive admin creator
-│   │   └── seeds.js                # Camp data seeder
+│   │   └── seedData.js             # Full dataset seeder (users, camps, reviews)
 │   │
 │   └── server.js                   # Main server file
 │
@@ -137,7 +136,7 @@ backend/
 
 5. **Seed admin user:**
    ```bash
-   npm run seed:admin
+   npm run create:admin
    ```
 
 6. **Start server:**
@@ -350,9 +349,6 @@ curl -X GET http://localhost:3000/api/user/profile \
 
 ### Create Admin User
 ```bash
-# Quick seed (uses email from .env)
-npm run seed:admin
-
 # Interactive creation
 npm run create:admin
 ```
@@ -480,9 +476,8 @@ git push heroku main
 
 ```bash
 npm start              # Start server
-npm run seed:admin     # Seed admin user (quick)
 npm run create:admin   # Create admin (interactive)
-npm run seed:camps     # Seed sample camps
+npm run seed:all        # Seed full dataset (users, camps, reviews)
 ```
 
 ---

@@ -46,7 +46,7 @@ import { verifyAccess } from "../utility/authToken.js";
 import User from "../models/user.js";
 
 const isTunnel = process.env.TUNNEL_MODE === "true";
-const isSecure = process.env.NODE_ENV === "production" || isTunnel;
+const isSecure = process.env.COOKIE_SECURE === "true" || isTunnel;
 
 const authCookieOptions = () => ({
   httpOnly: true,

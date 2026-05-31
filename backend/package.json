@@ -8,9 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon src/server.js",
     "start:prod": "node src/server.js",
-    "seed:admin": "node src/seeds/seedAdmin.js",
     "create:admin": "node src/seeds/createAdmin.js",
-    "seed:camps": "node src/seeds/seeds.js",
     "seed:all": "node src/seeds/seedData.js"
   },
   "keywords": [],

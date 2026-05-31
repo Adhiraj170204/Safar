@@ -9,11 +9,14 @@ RUN npm ci --omit=dev
 FROM node:22-alpine
 WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
+COPY package.json ./
 COPY src/ ./src/
+COPY docker-entrypoint.sh ./
 
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD wget -qO- http://localhost:3000/health || exit 1
 
+ENTRYPOINT ["sh", "/app/docker-entrypoint.sh"]
 CMD ["node", "src/server.js"]

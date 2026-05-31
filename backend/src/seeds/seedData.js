@@ -12,6 +12,14 @@ const seedData = async () => {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/Safar');
     console.log('✅ MongoDB Connected');
 
+    // Skip if data already exists (idempotent — protects production data)
+    const existing = await Camp.countDocuments();
+    if (existing > 0 && process.env.SEED_FORCE !== 'true' && !process.argv.includes('--force')) {
+      console.log('ℹ️  Data already exists, skipping seed. (Use SEED_FORCE=true or --force to re-seed)');
+      await mongoose.disconnect();
+      process.exit(0);
+    }
+
     // Clear existing data
     console.log('🗑️  Clearing existing data...');
     await Camp.deleteMany({});

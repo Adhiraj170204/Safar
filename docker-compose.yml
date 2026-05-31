@@ -6,6 +6,12 @@ services:
       - mongo_data:/data/db
     expose:
       - "27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   backend:
     build:
@@ -20,7 +26,8 @@ services:
     expose:
       - "3000"
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
       interval: 30s

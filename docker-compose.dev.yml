@@ -6,6 +6,12 @@ services:
       - mongo_data_dev:/data/db
     ports:
       - "27017:27017"   # exposed so you can connect with MongoDB Compass
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   backend:
     build:
@@ -20,10 +26,18 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017/Safar
       - PORT=3000
       - NODE_ENV=development
+      - APP_BASE_URL=http://localhost:5173
+      - COOKIE_DOMAIN=
+      - COOKIE_SECURE=false
+      - ADMIN_NAME=Admin User
+      - ADMIN_USERNAME=admin
+      - ADMIN_EMAIL=admin@safar.com
+      - ADMIN_PASSWORD=Admin@123
     ports:
       - "0.0.0.0:3000:3000"
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
 
   frontend:
     build:

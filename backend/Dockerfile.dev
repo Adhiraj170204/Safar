@@ -8,7 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Source is mounted via volume at runtime — no COPY needed here
+# Source (including docker-entrypoint.sh) is mounted via volume at runtime
 EXPOSE 3000
 
+ENTRYPOINT ["sh", "/app/docker-entrypoint.sh"]
 CMD ["node", "--watch", "src/server.js"]

@@ -5,13 +5,6 @@ import readline from "readline";
 
 dotenv.config();
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-const question = (query) => new Promise((resolve) => rl.question(query, resolve));
-
 const createAdmin = async () => {
   try {
     // Connect to MongoDB
@@ -22,13 +15,26 @@ const createAdmin = async () => {
     console.log('     CREATE ADMIN USER');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
-    // Get admin details from user input
-    const name = await question('Enter admin name (default: Admin User): ') || 'Admin User';
-    const username = await question('Enter username (default: admin): ') || 'admin';
-    const email = await question('Enter email (default: adhirajdubey17ad@gmail.com): ') || 'adhirajdubey17ad@gmail.com';
-    const password = await question('Enter password (default: Admin@123): ') || 'Admin@123';
+    let name, username, email, password;
 
-    rl.close();
+    if (process.env.ADMIN_EMAIL) {
+      // Non-interactive mode: read credentials from env vars
+      name     = process.env.ADMIN_NAME     || 'Admin User';
+      username = process.env.ADMIN_USERNAME || 'admin';
+      email    = process.env.ADMIN_EMAIL;
+      password = process.env.ADMIN_PASSWORD || 'Admin@123';
+      console.log('ℹ️  Using env var credentials (non-interactive mode)\n');
+    } else {
+      // Interactive mode: prompt in terminal
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      const question = (q) => new Promise((resolve) => rl.question(q, resolve));
+      name     = await question('Enter admin name (default: Admin User): ') || 'Admin User';
+      username = await question('Enter username (default: admin): ') || 'admin';
+      email    = await question('Enter email: ');
+      if (!email) { console.error('Email is required.'); rl.close(); process.exit(1); }
+      password = await question('Enter password (default: Admin@123): ') || 'Admin@123';
+      rl.close();
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ 
@@ -77,7 +83,6 @@ const createAdmin = async () => {
 
   } catch (error) {
     console.error('\n❌ Error creating admin:', error.message);
-    rl.close();
     process.exit(1);
   }
 };

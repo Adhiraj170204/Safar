@@ -152,7 +152,7 @@ API runs at **http://localhost:3000**.
 Optional — create an admin user:
 
 ```bash
-npm run seed:admin
+npm run create:admin
 ```
 
 ### 3. Frontend
@@ -268,9 +268,7 @@ Full endpoint tables, models, and curl examples: **[backend/README.md](backend/R
 Run from `backend/`:
 
 ```bash
-npm run seed:admin      # Quick admin user (uses EMAIL_USER from .env)
 npm run create:admin    # Interactive admin creation
-npm run seed:camps      # Sample camps
 npm run seed:all        # Full dataset (users, camps, reviews)
 ```
 
