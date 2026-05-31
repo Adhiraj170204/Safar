@@ -54,20 +54,21 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            if [ -d "$HOME/safar" ]; then
-              cd "$HOME/safar"
-              git pull origin Safar-react
-              sudo docker compose up --build -d
-              echo "--- Running containers ---"
-              sudo docker compose ps
-            else
-              echo "Fresh start detected! Running deploy-ec2.sh..."
-              if [ -f "$HOME/deploy-ec2.sh" ]; then
-                chmod +x "$HOME/deploy-ec2.sh"
-                bash "$HOME/deploy-ec2.sh"
-              else
-                echo "Error: $HOME/deploy-ec2.sh was not found on the EC2 instance!"
-                echo "Please upload it using scp first."
-                exit 1
-              fi
-            fi
+            cd "$HOME/safar"
+            git pull origin Safar-react
+            sudo docker compose up --build -d
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Waiting 30s for containers to start..."
+            sleep 30
+            cd "$HOME/safar"
+            echo "--- Container status ---"
+            sudo docker compose ps
+            echo "--- Backend health ---"
+            curl -sf http://localhost:3000/health && echo " OK" || echo " WARNING: backend not yet healthy (may still be starting)"
