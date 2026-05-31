@@ -4,12 +4,11 @@ A full-stack platform to discover, share, and review camping and travel experien
 
 **Repository:** [github.com/Adhiraj170204/Safar](https://github.com/Adhiraj170204/Safar) (branch: [`Safar-react`](https://github.com/Adhiraj170204/Safar/tree/Safar-react))
 
------
+---
 
 ## Table of Contents
 
 - [Features](#features)
-- [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
@@ -17,12 +16,10 @@ A full-stack platform to discover, share, and review camping and travel experien
 - [Local Development](#local-development)
 - [Production (Docker)](#production-docker)
 - [Environment Variables](#environment-variables)
-- [API Reference](#api-reference)
 - [Database Seeding](#database-seeding)
+- [Monitoring](#monitoring)
+- [CI/CD](#cicd)
 - [Security](#security)
-- [Deployment](#deployment)
-- [Contributing](#contributing)
-- [License](#license)
 - [Author](#author)
 
 ---
@@ -42,27 +39,16 @@ A full-stack platform to discover, share, and review camping and travel experien
 
 ---
 
-## Screenshots
-
-Add images to [`docs/screenshots/`](docs/screenshots/) and they will appear here.
-
-| | |
-|---|---|
-| ![Home](docs/screenshots/home.png) | **Home** — Landing page |
-| ![Camp detail](docs/screenshots/camp-detail.png) | **Camp detail** — Photos, reviews, favorite |
-| ![Map view](docs/screenshots/map-view.png) | **Map view** — Browse camps geographically |
-| ![Admin](docs/screenshots/admin.png) | **Admin** — Dashboard and moderation |
-
----
-
 ## Tech Stack
 
 | Layer | Technologies |
-|-------|----------------|
+| --- | --- |
 | **Frontend** | React 19, TypeScript, Vite 7, Tailwind CSS 4, React Router, Zustand, Mapbox GL, Radix UI |
 | **Backend** | Node.js, Express 4, Mongoose, JWT, Zod, Multer, Cloudinary, Nodemailer |
-| **Database** | MongoDB 7 |
-| **DevOps** | Docker, Docker Compose, Nginx (production frontend) |
+| **Database** | MongoDB 7 (authenticated) |
+| **Infrastructure** | Docker, Docker Compose, Nginx |
+| **Monitoring** | Prometheus, Grafana, Loki, Grafana Alloy, Node Exporter |
+| **CI/CD** | GitHub Actions |
 
 ---
 
@@ -71,22 +57,32 @@ Add images to [`docs/screenshots/`](docs/screenshots/) and they will appear here
 ```mermaid
 flowchart LR
   subgraph client [Browser]
-    SPA[React_Vite_SPA]
+    SPA[React Vite SPA]
   end
-  subgraph docker [Docker_Compose]
-    Nginx[Nginx_port_80]
-    API[Express_API_3000]
-    DB[(MongoDB_7)]
+  subgraph docker [Docker Compose]
+    Nginx[Nginx :80]
+    API[Express API :3000]
+    DB[(MongoDB :27017)]
+    Prom[Prometheus :9090]
+    Graf[Grafana :3001]
+    Loki[Loki :3100]
+    Alloy[Grafana Alloy]
+    NE[Node Exporter]
   end
   Cloudinary[Cloudinary]
   Mapbox[Mapbox]
-  SMTP[Email_SMTP]
+  SMTP[SMTP]
   SPA --> Nginx
-  Nginx -->|"/api proxy"| API
+  Nginx -->|/api proxy| API
   API --> DB
   API --> Cloudinary
   API --> Mapbox
   API --> SMTP
+  Prom -->|scrape /metrics| API
+  Prom --> NE
+  Alloy -->|push logs| Loki
+  Graf --> Prom
+  Graf --> Loki
 ```
 
 In **local development**, the Vite dev server (`:5173`) talks directly to the Express API (`:3000`). In **production**, Nginx serves the built SPA and proxies `/api` to the backend container.
@@ -97,30 +93,43 @@ In **local development**, the Vite dev server (`:5173`) talks directly to the Ex
 
 ```
 Safar/
-├── backend/          # Express REST API
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml         # GitHub Actions — build + deploy on push
+├── backend/
 │   ├── src/
-│   │   ├── routes/   # user, camp, review, admin, health
+│   │   ├── routes/           # user, camp, review, admin, health
 │   │   ├── models/
 │   │   ├── utility/
+│   │   │   └── metrics.js    # Prometheus instrumentation (prom-client)
 │   │   └── seeds/
-│   └── .env.example
-├── frontend/         # React + Vite SPA
+│   ├── docker-entrypoint.sh  # Runs seeds then starts server
+│   └── Dockerfile
+├── frontend/
 │   ├── src/
 │   │   ├── pages/
 │   │   ├── components/
 │   │   └── api/
-│   └── .env.example
-├── docs/
-│   └── screenshots/  # Add UI screenshots here
-├── docker-compose.yml
-└── .env.example      # Mapbox token for Docker frontend build
+│   └── Dockerfile
+├── monitoring/
+│   ├── prometheus.yml
+│   ├── loki-config.yml
+│   ├── alloy/
+│   │   └── config.alloy
+│   └── grafana/
+│       ├── provisioning/     # Auto-configured datasources
+│       └── dashboards/       # Pre-built Safar Overview dashboard
+├── scripts/
+│   └── deploy-ec2.sh         # Non-interactive fresh EC2 setup (gitignored)
+├── docker-compose.yml        # Production stack
+└── docker-compose.dev.yml    # Local dev stack
 ```
 
 ---
 
 ## Prerequisites
 
-- **Node.js** 18+ (22 recommended for Docker images)
+- **Node.js** 22
 - **MongoDB** — local instance or [MongoDB Atlas](https://www.mongodb.com/atlas)
 - **[Cloudinary](https://cloudinary.com)** — image storage
 - **[Mapbox](https://account.mapbox.com/)** — maps and geocoding
@@ -130,7 +139,7 @@ Safar/
 
 ## Local Development
 
-### 1. Clone and enter the project
+### 1. Clone
 
 ```bash
 git clone -b Safar-react https://github.com/Adhiraj170204/Safar.git
@@ -147,22 +156,13 @@ cp .env.example .env
 npm start
 ```
 
-API runs at **http://localhost:3000**.
-
-Optional — create an admin user:
-
-```bash
-npm run create:admin
-```
+API runs at `http://localhost:3000`.
 
 ### 3. Frontend
-
-In a second terminal:
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env
 ```
 
 Set in `frontend/.env`:
@@ -178,57 +178,68 @@ npm run dev
 
 App runs at **http://localhost:5173**.
 
+### 4. Docker (dev stack)
+
+Alternatively, run everything with Docker:
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
 ---
 
 ## Production (Docker)
 
-From the **repository root**:
+### Fresh EC2 deployment
 
-1. Copy environment files and fill in real values:
+Upload the deploy script to the instance and run it (the script installs Docker, clones the repo, writes all env files, and starts the stack):
 
-   ```bash
-   cp .env.example .env
-   cp backend/.env.example backend/.env
-   ```
+```bash
+scp -i safar-key.pem scripts/deploy-ec2.sh ubuntu@<EC2-IP>:~/deploy-ec2.sh
+ssh -i safar-key.pem ubuntu@<EC2-IP>
+chmod +x ~/deploy-ec2.sh && bash ~/deploy-ec2.sh
+```
 
-   - Root `.env` — `VITE_MAPBOX_TOKEN` (used at frontend **build** time)
-   - `backend/.env` — JWT, MongoDB, Cloudinary, email, `APP_BASE_URL`, etc.
+### Manual / subsequent deploys
 
-2. Build and start:
+```bash
+cd ~/safar
+git pull origin Safar-react
+sudo docker compose up --build -d
+```
 
-   ```bash
-   docker compose up --build -d
-   ```
+### EC2 security group — required open ports
 
-3. Open **http://localhost** — Nginx serves the SPA and proxies `/api` to the backend.
-
-Health check: `GET /health` on the backend (internal port 3000).
+| Port | Service |
+| --- | --- |
+| `80` | App (HTTP) |
+| `22` | SSH |
+| `3001` | Grafana (restrict to your IP) |
+| `9090` | Prometheus (restrict to your IP) |
 
 ---
 
 ## Environment Variables
 
-### Root (Docker build)
+### Root `.env` (Docker Compose)
 
 | Variable | Description |
-|----------|-------------|
-| `VITE_MAPBOX_TOKEN` | Mapbox token baked into the frontend image |
+| --- | --- |
+| `VITE_MAPBOX_TOKEN` | Mapbox token baked into the frontend image at build time |
+| `MONGO_PASSWORD` | MongoDB root password |
+| `GRAFANA_PASSWORD` | Grafana admin password (default: `Admin@1234`) |
 
-See [`.env.example`](.env.example).
-
-### Backend
+### Backend `.env`
 
 | Variable | Description |
-|----------|-------------|
+| --- | --- |
 | `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | 64+ char random hex strings |
-| `MONGODB_URI` | MongoDB connection string |
-| `CLOUDINARY_*` | Cloud name, API key, secret |
-| `EMAIL_*` | SMTP host, port, user, password |
-| `APP_BASE_URL` | Frontend URL(s) for CORS and email links |
+| `MONGODB_URI` | Overridden by Docker Compose to include auth credentials |
+| `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Cloudinary credentials |
+| `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_USER` / `EMAIL_PASS` | SMTP config |
+| `APP_BASE_URL` | Frontend origin(s) for CORS and email links |
 | `MAPBOX_TOKEN` | Server-side geocoding |
-| `COOKIE_DOMAIN` | Cookie domain in production |
-
-See [`backend/.env.example`](backend/.env.example).
+| `COOKIE_SECURE` | `true` in production (HTTPS), `false` for HTTP |
 
 Generate JWT secrets:
 
@@ -236,79 +247,75 @@ Generate JWT secrets:
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
-### Frontend (local dev)
-
-| Variable | Description |
-|----------|-------------|
-| `VITE_MAPBOX_TOKEN` | Mapbox public token |
-| `VITE_API_BASE_URL` | `http://localhost:3000/api` (dev) or `/api` (Docker) |
-
-See [`frontend/.env.example`](frontend/.env.example).
-
----
-
-## API Reference
-
-REST API base path: `/api`.
-
-| Area | Prefix | Auth |
-|------|--------|------|
-| Health | `/health` | No |
-| Users & auth | `/api/user` | Mixed |
-| Camps | `/api/camp` | Mixed |
-| Reviews | `/api/camp/:id/review` | Mixed |
-| Admin | `/api/admin` | Admin only |
-
-Full endpoint tables, models, and curl examples: **[backend/README.md](backend/README.md)**.
-
 ---
 
 ## Database Seeding
 
-Run from `backend/`:
+Seeds run automatically on container startup (skipped if data already exists).
+
+Manual commands on EC2:
 
 ```bash
-npm run create:admin    # Interactive admin creation
-npm run seed:all        # Full dataset (users, camps, reviews)
+# Seed camp/user data
+sudo docker compose exec backend node src/seeds/seedData.js
+
+# Force re-seed (wipes existing data)
+sudo docker compose exec backend node src/seeds/seedData.js --force
+
+# Create admin user (interactive)
+sudo docker compose exec backend node src/seeds/createAdmin.js
 ```
+
+---
+
+## Monitoring
+
+The production stack includes a full observability setup accessible from the EC2 instance.
+
+| Service | URL | Credentials |
+| --- | --- | --- |
+| **Grafana** | `http://<EC2-IP>:3001` | `admin / <GRAFANA_PASSWORD>` |
+| **Prometheus** | `http://<EC2-IP>:9090` | — |
+
+**Grafana → Dashboards → Safar → Safar Overview** shows:
+
+- HTTP request rate and error rate by route
+- P95 response time
+- MongoDB connection status
+- CPU, memory, and disk gauges
+- Live container logs (via Loki)
+
+**Prometheus scrape targets:** Prometheus self, `safar-backend` (`/metrics`), `node-exporter` (system).
+
+---
+
+## CI/CD
+
+Every push to `Safar-react` triggers the GitHub Actions workflow (`.github/workflows/ci-cd.yml`):
+
+1. **CI** — installs backend deps, installs frontend deps, builds the frontend
+2. **Deploy** — SSHs into EC2, runs `git pull && docker compose up --build -d`
+
+Required GitHub repository secrets:
+
+| Secret | Value |
+| --- | --- |
+| `EC2_HOST` | EC2 public IP |
+| `EC2_USER` | `ubuntu` |
+| `EC2_SSH_KEY` | Contents of `safar-key.pem` |
+| `VITE_MAPBOX_TOKEN` | Mapbox token (for CI frontend build) |
 
 ---
 
 ## Security
 
 - HttpOnly JWT cookies with refresh token rotation
-- Helmet, CORS allowlist, rate limiting (stricter on auth routes)
-- Zod validation and request sanitization
+- MongoDB requires authentication (`admin` user, `authSource=admin`)
+- Helmet headers, CORS allowlist, rate limiting (stricter on auth routes)
+- Zod validation and NoSQL-injection / XSS sanitization on all requests
 - Email verification required before login
-- **Never commit** `.env` files, `cookies.txt`, or API keys
-- Use HTTPS and `COOKIE_DOMAIN` matching your production domain
-
----
-
-## Deployment
-
-1. Host MongoDB (Atlas recommended) and set `MONGODB_URI`.
-2. Set `APP_BASE_URL` to your public frontend URL (CORS and email links).
-3. Configure Cloudinary and SMTP for production.
-4. Build frontend with correct `VITE_*` variables (Docker handles this via compose args).
-5. Put TLS termination in front of Nginx (e.g. reverse proxy or cloud load balancer).
-
-For a split deploy (e.g. Railway + Vercel), run backend and frontend separately; set `VITE_API_BASE_URL` to your API URL and update backend CORS / `APP_BASE_URL`.
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Commit your changes
-4. Push and open a Pull Request
-
----
-
-## License
-
-ISC — see [backend/package.json](backend/package.json).
+- `/metrics` endpoint is internal-only (not proxied by Nginx)
+- `.env` files, `safar-key.pem`, and `deploy-ec2.sh` are gitignored
 
 ---
 
