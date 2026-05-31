@@ -4,7 +4,7 @@ A full-stack platform to discover, share, and review camping and travel experien
 
 **Repository:** [github.com/Adhiraj170204/Safar](https://github.com/Adhiraj170204/Safar) (branch: [`Safar-react`](https://github.com/Adhiraj170204/Safar/tree/Safar-react))
 
----
+-----
 
 ## Table of Contents
 
