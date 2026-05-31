@@ -18,7 +18,10 @@
 # =============================================================================
 set -euo pipefail
 
-REPO_DIR="${REPO_DIR:-$HOME/safar}"
+# Resolve the real user's home even when called via `sudo bash`
+_ACTUAL_USER="${SUDO_USER:-$USER}"
+_ACTUAL_HOME=$(eval echo "~$_ACTUAL_USER")
+REPO_DIR="${REPO_DIR:-$_ACTUAL_HOME/safar}"
 GITHUB_REPO="Adhiraj170204/Safar"
 SERVICE_NAME="safar-update-ip"
 
