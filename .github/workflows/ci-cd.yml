@@ -50,11 +50,12 @@ jobs:
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            sudo -i
             set -e
-            cd /root/safar
+            cd safar
             git pull origin Safar-react
             docker compose up --build -d
             echo "--- Running containers ---"
