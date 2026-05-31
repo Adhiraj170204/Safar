@@ -54,7 +54,20 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            git pull origin Safar-react
-            sudo docker compose up --build -d
-            echo "--- Running containers ---"
-            sudo docker compose ps
+            if [ -d "$HOME/safar" ]; then
+              cd "$HOME/safar"
+              git pull origin Safar-react
+              sudo docker compose up --build -d
+              echo "--- Running containers ---"
+              sudo docker compose ps
+            else
+              echo "Fresh start detected! Running deploy-ec2.sh..."
+              if [ -f "$HOME/deploy-ec2.sh" ]; then
+                chmod +x "$HOME/deploy-ec2.sh"
+                bash "$HOME/deploy-ec2.sh"
+              else
+                echo "Error: $HOME/deploy-ec2.sh was not found on the EC2 instance!"
+                echo "Please upload it using scp first."
+                exit 1
+              fi
+            fi
