@@ -38,7 +38,6 @@ loki.source.docker "docker_logs" {
   host             = "unix:///var/run/docker.sock"
   targets          = discovery.relabel.container_meta.output
   forward_to       = [loki.write.loki_endpoint.receiver]
-  relabeling_rules = discovery.relabel.container_meta.rules
   refresh_interval = "5s"
 }
 
