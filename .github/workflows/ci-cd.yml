@@ -54,7 +54,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            cd ~/safar
             git pull origin Safar-react
             sudo docker compose up --build -d
             echo "--- Running containers ---"
