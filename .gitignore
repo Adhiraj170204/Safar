@@ -1,5 +1,6 @@
 .vscode
 safar-key.pem
+deploy-ec2.sh
 clone
 node_modules
 dist
@@ -7,6 +8,7 @@ build
 .env
 .env.local
 *.log
+/p11 monitoring
 .DS_Store
 cookies.txt
 *.cookies

@@ -14,6 +14,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { sanitizeRequest } from "./utility/sanitize.js";
+import { register, metricsMiddleware, mongoDbConnected } from "./utility/metrics.js";
 
 const isProd = process.env.NODE_ENV === "production";
 const isTunnel = process.env.TUNNEL_MODE === "true";
@@ -24,6 +25,16 @@ if (isTunnel) {
 
 const isTunnelOrigin = (origin) =>
   /^https:\/\/[\w-]+(\.[\w-]+)*\.(trycloudflare\.com|ngrok-free\.app|ngrok\.io|ngrok\.app|loca\.lt)$/.test(origin);
+
+// Metrics middleware — record every request before any other processing
+app.use(metricsMiddleware);
+
+// /metrics endpoint — accessible only within the Docker network.
+// nginx does not proxy this path, so it is never reachable externally.
+app.get('/metrics', async (_req, res) => {
+  res.setHeader('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
 
 // Body parsers must come first — cap request size to prevent payload abuse
 app.use(express.json({ limit: "10kb" }));
@@ -92,11 +103,17 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/Safar', {
 })
     .then(() => {
         console.log('Mongo Connection Successful')
+        mongoDbConnected.set(1);
     })
     .catch((err) => {
         console.log('Mongo Connection Failed')
         console.log(err)
+        mongoDbConnected.set(0);
     })
+
+mongoose.connection.on('connected',    () => mongoDbConnected.set(1));
+mongoose.connection.on('disconnected', () => mongoDbConnected.set(0));
+mongoose.connection.on('error',        () => mongoDbConnected.set(0));
 
 // Import models BEFORE routes to ensure they're registered
 import "./models/user.js"

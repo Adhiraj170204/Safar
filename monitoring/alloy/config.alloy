@@ -1,0 +1,50 @@
+// ── Discover all Docker containers ────────────────────────────────────────────
+discovery.docker "all_containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// ── Relabel: extract useful labels from Docker metadata ───────────────────────
+discovery.relabel "container_meta" {
+  targets = discovery.docker.all_containers.targets
+
+  // container name (strip leading /)
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  // compose service name (e.g. backend, frontend, mongodb)
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+
+  // log stream (stdout / stderr)
+  rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+  }
+
+  // tag all logs with project=safar
+  rule {
+    target_label = "project"
+    replacement  = "safar"
+  }
+}
+
+// ── Collect Docker logs and forward to Loki ───────────────────────────────────
+loki.source.docker "docker_logs" {
+  host             = "unix:///var/run/docker.sock"
+  targets          = discovery.relabel.container_meta.output
+  forward_to       = [loki.write.loki_endpoint.receiver]
+  relabeling_rules = discovery.relabel.container_meta.rules
+  refresh_interval = "5s"
+}
+
+// ── Push to Loki ──────────────────────────────────────────────────────────────
+loki.write "loki_endpoint" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
