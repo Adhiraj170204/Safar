@@ -91,7 +91,7 @@ In **local development**, the Vite dev server (`:5173`) talks directly to the Ex
 
 ## Project Structure
 
-```
+```text
 Safar/
 ├── .github/
 │   └── workflows/
@@ -120,7 +120,8 @@ Safar/
 │       ├── provisioning/     # Auto-configured datasources
 │       └── dashboards/       # Pre-built Safar Overview dashboard
 ├── scripts/
-│   └── deploy-ec2.sh         # Non-interactive fresh EC2 setup (gitignored)
+│   ├── deploy-ec2.sh         # Non-interactive fresh EC2 setup (gitignored)
+│   └── update-ip.sh          # Updates EC2_HOST secret + backend env on IP change
 ├── docker-compose.yml        # Production stack
 └── docker-compose.dev.yml    # Local dev stack
 ```
@@ -176,7 +177,7 @@ VITE_API_BASE_URL=http://localhost:3000/api
 npm run dev
 ```
 
-App runs at **http://localhost:5173**.
+App runs at **`http://localhost:5173`**.
 
 ### 4. Docker (dev stack)
 
@@ -204,7 +205,7 @@ chmod +x ~/deploy-ec2.sh && bash ~/deploy-ec2.sh
 
 ```bash
 cd ~/safar
-git pull origin Safar-react
+git pull --rebase origin Safar-react
 sudo docker compose up --build -d
 ```
 
@@ -293,17 +294,44 @@ The production stack includes a full observability setup accessible from the EC2
 
 Every push to `Safar-react` triggers the GitHub Actions workflow (`.github/workflows/ci-cd.yml`):
 
-1. **CI** — installs backend deps, installs frontend deps, builds the frontend
-2. **Deploy** — SSHs into EC2, runs `git pull && docker compose up --build -d`
+1. **Security scan** — Trivy scans for vulnerabilities and secrets (`CRITICAL`/`HIGH`); results uploaded to GitHub Security tab. Dockerfile/Compose misconfigurations are scanned in advisory mode (does not block deploy).
+2. **CI** — installs backend and frontend deps, builds the frontend (requires `VITE_MAPBOX_TOKEN`).
+3. **Deploy** — SSHs into EC2, runs `git pull --rebase origin Safar-react && docker compose up --build -d`, then verifies container health.
 
 Required GitHub repository secrets:
 
 | Secret | Value |
 | --- | --- |
-| `EC2_HOST` | EC2 public IP |
-| `EC2_USER` | `ubuntu` |
+| `EC2_HOST` | EC2 public IP (kept current by `update-ip.sh`) |
 | `EC2_SSH_KEY` | Contents of `safar-key.pem` |
 | `VITE_MAPBOX_TOKEN` | Mapbox token (for CI frontend build) |
+
+### Handling EC2 IP changes
+
+AWS assigns a new public IP every time an EC2 instance is stopped and started. `scripts/update-ip.sh` automates keeping everything in sync:
+
+- Detects the current public IP via the EC2 metadata service
+- Patches `backend/.env` → `APP_BASE_URL`
+- Recreates the backend container to pick up the new value
+- Pushes the new IP to the `EC2_HOST` GitHub secret via `gh` CLI
+
+**One-time setup** (run once on the EC2 instance — installs `gh` CLI, stores a GitHub PAT, registers a systemd service that fires on every boot):
+
+```bash
+sudo bash ~/safar/scripts/update-ip.sh --install
+```
+
+**Run manually** at any time (e.g. after a manual instance restart):
+
+```bash
+bash ~/safar/scripts/update-ip.sh
+```
+
+Check service logs:
+
+```bash
+journalctl -u safar-update-ip -n 50
+```
 
 ---
 
