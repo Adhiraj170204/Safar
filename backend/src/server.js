@@ -19,7 +19,9 @@ import { register, metricsMiddleware, mongoDbConnected } from "./utility/metrics
 const isProd = process.env.NODE_ENV === "production";
 const isTunnel = process.env.TUNNEL_MODE === "true";
 
-if (isTunnel) {
+// Trust the first proxy (Nginx) in production and tunnel mode so req.ip
+// reflects the real client IP instead of the Docker bridge address.
+if (isProd || isTunnel) {
   app.set("trust proxy", 1);
 }
 
@@ -87,8 +89,8 @@ if (!isProd) {
 // Input sanitization (NoSQL-injection + basic XSS) — Express 5 safe
 app.use(sanitizeRequest);
 
-// General rate limiter
-const limiter = rateLimit({ windowMs: 15*60*1000, max: 100 });
+// General rate limiter — 500 req / 15 min per IP for normal browsing
+const limiter = rateLimit({ windowMs: 15*60*1000, max: 500 });
 app.use(limiter);
 
 // Stricter rate limiter for auth routes — tight in production, relaxed in dev
